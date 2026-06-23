@@ -6,7 +6,7 @@ from flask_login import LoginManager, UserMixin, login_user, logout_user, login_
 from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import datetime
 import json
-import numpy as np
+
 from embedding_model import get_embedding, assign_tag
 from qdrant_store import init_collection, store_vector, search_similar
 
