@@ -19,6 +19,13 @@ import json
 import sys
 import unittest
 import datetime
+
+# Configure output encoding to support unicode print in Windows consoles
+try:
+    sys.stdout.reconfigure(encoding='utf-8')
+except Exception:
+    pass
+
 from openpyxl import Workbook
 from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
 from openpyxl.utils import get_column_letter
@@ -38,13 +45,22 @@ CYAN   = "\033[96m"
 RESET  = "\033[0m"
 BOLD   = "\033[1m"
 
-def ok(msg):  print(f"  {GREEN}✓{RESET} {msg}")
-def fail(msg):print(f"  {RED}✗{RESET} {msg}")
-def info(msg):print(f"  {CYAN}→{RESET} {msg}")
+def safe_print(msg):
+    try:
+        print(msg)
+    except UnicodeEncodeError:
+        try:
+            print(msg.encode('ascii', errors='replace').decode('ascii'))
+        except Exception:
+            pass
+
+def ok(msg):  safe_print(f"  {GREEN}✓{RESET} {msg}")
+def fail(msg):safe_print(f"  {RED}✗{RESET} {msg}")
+def info(msg):safe_print(f"  {CYAN}→{RESET} {msg}")
 def section(title):
-    print(f"\n{BOLD}{YELLOW}{'-'*55}{RESET}")
-    print(f"{BOLD}{YELLOW}  {title}{RESET}")
-    print(f"{BOLD}{YELLOW}{'-'*55}{RESET}")
+    safe_print(f"\n{BOLD}{YELLOW}{'-'*55}{RESET}")
+    safe_print(f"{BOLD}{YELLOW}  {title}{RESET}")
+    safe_print(f"{BOLD}{YELLOW}{'-'*55}{RESET}")
 
 
 # ── test questions ─────────────────────────────────────────────────────────────
