@@ -1,6 +1,6 @@
 import os
 import math
-import requests
+import socket
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -24,12 +24,23 @@ topic_sentences = {
     for topic, keywords in TOPICS.items() if keywords
 }
 
+import json
+import urllib.request
+import urllib.error
+
 def query_huggingface(texts):
     """Query the Hugging Face Inference API."""
-    response = requests.post(API_URL, headers=headers, json={"inputs": texts, "options": {"wait_for_model": True}})
-    if response.status_code != 200:
-        raise Exception(f"Hugging Face API error: {response.text}")
-    return response.json()
+    data = json.dumps({"inputs": texts, "options": {"wait_for_model": True}}).encode("utf-8")
+    req = urllib.request.Request(API_URL, data=data, headers=headers)
+    req.add_header("Content-Type", "application/json")
+    try:
+        with urllib.request.urlopen(req) as response:
+            return json.loads(response.read().decode("utf-8"))
+    except urllib.error.HTTPError as e:
+        raise Exception(f"Hugging Face API error: {e.read().decode('utf-8')}")
+    except Exception as e:
+        # Fallback error for DNS or connection issues
+        raise Exception(f"Network error querying Hugging Face: {str(e)}")
 
 # Pre-compute topic embeddings once at startup
 topic_embeddings = {}
