@@ -1,0 +1,245 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard — GISUL{% endblock %}
+
+{% block content %}
+<style>
+  /* ── Dashboard layout ── */
+  .dash-wrap {
+    width: 100%;
+    max-width: 720px;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+
+  /* ── Welcome bar ── */
+  .welcome-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1rem 1.5rem;
+  }
+  .welcome-bar .greeting {
+    font-size: 0.95rem;
+    color: var(--muted);
+  }
+  .welcome-bar .greeting strong {
+    color: var(--accent2);
+  }
+  .welcome-bar .nav-pill {
+    display: flex;
+    gap: 0.75rem;
+  }
+  .welcome-bar .nav-pill a {
+    color: var(--muted);
+    text-decoration: none;
+    font-size: 0.85rem;
+    font-weight: 500;
+    padding: 0.35rem 0.85rem;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    transition: all 0.2s;
+  }
+  .welcome-bar .nav-pill a:hover {
+    color: var(--text);
+    background: var(--surface2);
+    border-color: var(--accent);
+  }
+
+  /* ── Ask card ── */
+  .ask-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 2rem;
+    box-shadow: 0 20px 50px rgba(0,0,0,0.4);
+  }
+  .ask-card h2 {
+    font-size: 1.35rem;
+    font-weight: 700;
+    margin-bottom: 0.4rem;
+  }
+  .ask-card .sub {
+    color: var(--muted);
+    font-size: 0.875rem;
+    margin-bottom: 1.5rem;
+  }
+  textarea {
+    width: 100%;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 1rem;
+    color: var(--text);
+    font-size: 0.95rem;
+    font-family: inherit;
+    resize: vertical;
+    min-height: 90px;
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+  }
+  textarea:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(108,99,255,0.15);
+  }
+  .ask-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-top: 1rem;
+    padding: 0.8rem 1.8rem;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    font-size: 0.95rem;
+    font-weight: 600;
+    font-family: inherit;
+    cursor: pointer;
+    transition: opacity 0.2s, transform 0.15s;
+  }
+  .ask-btn:hover  { opacity: 0.88; transform: translateY(-1px); }
+  .ask-btn:active { transform: translateY(0); }
+
+  /* ── Result card ── */
+  .result-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1.75rem;
+    animation: fadeUp 0.4s ease;
+  }
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(12px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  .topic-row {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 1.25rem;
+  }
+  .topic-label {
+    color: var(--muted);
+    font-size: 0.875rem;
+  }
+  .badge {
+    display: inline-block;
+    padding: 0.25rem 0.75rem;
+    border-radius: 999px;
+    font-size: 0.78rem;
+    font-weight: 600;
+    background: rgba(108,99,255,0.15);
+    color: var(--accent2);
+    border: 1px solid rgba(108,99,255,0.3);
+  }
+  .badge.small { font-size: 0.72rem; padding: 0.18rem 0.6rem; }
+
+  .similar-list {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+  .similar-list li {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.85rem;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 0.85rem 1rem;
+    transition: border-color 0.2s;
+  }
+  .similar-list li:hover { border-color: var(--accent); }
+  .score-pill {
+    flex-shrink: 0;
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: var(--success);
+    background: rgba(52,211,153,0.1);
+    border: 1px solid rgba(52,211,153,0.25);
+    border-radius: 999px;
+    padding: 0.2rem 0.6rem;
+  }
+  .similar-text {
+    flex: 1;
+    font-size: 0.9rem;
+    color: var(--text);
+  }
+  .no-similar {
+    color: var(--muted);
+    font-size: 0.9rem;
+    text-align: center;
+    padding: 1rem 0;
+  }
+  .section-title {
+    font-size: 1rem;
+    font-weight: 600;
+    margin-bottom: 0.85rem;
+    color: var(--text);
+  }
+</style>
+
+<div class="dash-wrap">
+
+  <!-- Welcome bar -->
+  <div class="welcome-bar">
+    <span class="greeting">👋 Hello, <strong>{{ current_user.email }}</strong></span>
+    <div class="nav-pill">
+      <a href="{{ url_for('history') }}">📚 My History</a>
+      <a href="{{ url_for('logout') }}">Logout</a>
+    </div>
+  </div>
+
+  <!-- Ask form -->
+  <div class="ask-card">
+    <h2>⚡ Ask a Study Question</h2>
+    <p class="sub">GISUL will detect the topic and surface similar questions from your history.</p>
+    <form method="POST" action="{{ url_for('ask') }}" id="ask-form">
+      <textarea
+        id="question-input"
+        name="question"
+        rows="3"
+        placeholder="e.g. Why does photosynthesis need light?"
+        required
+      >{{ question or '' }}</textarea>
+      <button type="submit" class="ask-btn" id="ask-btn">
+        🔍 Find Similar Questions
+      </button>
+    </form>
+  </div>
+
+  <!-- Results (only shown after a submission) -->
+  {% if tag %}
+  <div class="result-card">
+    <div class="topic-row">
+      <span class="topic-label">Topic detected:</span>
+      <span class="badge">{{ tag }}</span>
+    </div>
+
+    <p class="section-title">Similar Questions from Your History</p>
+    {% if similar %}
+      <ul class="similar-list">
+        {% for s in similar %}
+          <li>
+            <span class="score-pill">{{ (s.score * 100)|int }}%</span>
+            <span class="similar-text">
+              {{ s.text }}
+              <span class="badge small" style="margin-left:0.4rem">{{ s.tag }}</span>
+            </span>
+          </li>
+        {% endfor %}
+      </ul>
+    {% else %}
+      <p class="no-similar">No similar questions found yet — ask more to build your history!</p>
+    {% endif %}
+  </div>
+  {% endif %}
+
+</div>
+{% endblock %}

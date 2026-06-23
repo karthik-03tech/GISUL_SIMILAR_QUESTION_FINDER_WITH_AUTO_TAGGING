@@ -1,0 +1,237 @@
+{% extends "base.html" %}
+
+{% block title %}My History — GISUL{% endblock %}
+
+{% block content %}
+<style>
+  /* ── History layout ── */
+  .history-wrap {
+    width: 100%;
+    max-width: 760px;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+
+  /* ── Page header ── */
+  .page-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1rem 1.5rem;
+  }
+  .page-header h1 {
+    font-size: 1.2rem;
+    font-weight: 700;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  .back-link {
+    color: var(--muted);
+    text-decoration: none;
+    font-size: 0.85rem;
+    font-weight: 500;
+    padding: 0.35rem 0.85rem;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    transition: all 0.2s;
+  }
+  .back-link:hover {
+    color: var(--text);
+    background: var(--surface2);
+    border-color: var(--accent);
+  }
+
+  /* ── Tag filter bar ── */
+  .filter-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1.25rem 1.5rem;
+  }
+  .filter-label {
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 0.75rem;
+  }
+  .tag-filters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+  .tag-filters a {
+    display: inline-block;
+    padding: 0.3rem 0.9rem;
+    border-radius: 999px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    text-decoration: none;
+    border: 1px solid var(--border);
+    color: var(--muted);
+    background: var(--surface2);
+    transition: all 0.2s;
+  }
+  .tag-filters a:hover {
+    color: var(--accent2);
+    border-color: var(--accent);
+    background: rgba(108,99,255,0.08);
+  }
+  .tag-filters a.active {
+    color: var(--accent2);
+    background: rgba(108,99,255,0.15);
+    border-color: rgba(108,99,255,0.4);
+  }
+
+  /* ── History list ── */
+  .history-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+  }
+  .history-card-header {
+    padding: 1rem 1.5rem;
+    border-bottom: 1px solid var(--border);
+    font-size: 0.85rem;
+    color: var(--muted);
+    font-weight: 500;
+  }
+  .history-list {
+    list-style: none;
+  }
+  .history-list li {
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+    padding: 1rem 1.5rem;
+    border-bottom: 1px solid var(--border);
+    transition: background 0.15s;
+    animation: fadeUp 0.35s ease both;
+  }
+  .history-list li:last-child { border-bottom: none; }
+  .history-list li:hover { background: var(--surface2); }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(8px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .q-badge {
+    flex-shrink: 0;
+    margin-top: 0.15rem;
+    display: inline-block;
+    padding: 0.22rem 0.65rem;
+    border-radius: 999px;
+    font-size: 0.72rem;
+    font-weight: 700;
+    background: rgba(108,99,255,0.12);
+    color: var(--accent2);
+    border: 1px solid rgba(108,99,255,0.28);
+    white-space: nowrap;
+  }
+  .q-body {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+  }
+  .q-text {
+    font-size: 0.92rem;
+    color: var(--text);
+    line-height: 1.5;
+  }
+  .q-time {
+    font-size: 0.76rem;
+    color: var(--muted);
+  }
+
+  /* ── Empty state ── */
+  .empty-state {
+    text-align: center;
+    padding: 3rem 1rem;
+    color: var(--muted);
+  }
+  .empty-state .empty-icon { font-size: 2.5rem; margin-bottom: 0.75rem; }
+  .empty-state p { font-size: 0.9rem; }
+  .empty-state a {
+    display: inline-block;
+    margin-top: 1rem;
+    padding: 0.6rem 1.4rem;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    color: #fff;
+    border-radius: 8px;
+    text-decoration: none;
+    font-size: 0.875rem;
+    font-weight: 600;
+    transition: opacity 0.2s;
+  }
+  .empty-state a:hover { opacity: 0.85; }
+</style>
+
+<div class="history-wrap">
+
+  <!-- Page header -->
+  <div class="page-header">
+    <h1>📚 My Question History</h1>
+    <a href="{{ url_for('dashboard') }}" class="back-link">← Back to Dashboard</a>
+  </div>
+
+  <!-- Tag filter bar -->
+  <div class="filter-card">
+    <p class="filter-label">Filter by Topic</p>
+    <div class="tag-filters">
+      <a href="{{ url_for('history') }}"
+         class="{% if not selected_tag %}active{% endif %}">
+        All Topics
+      </a>
+      {% for tag in all_tags %}
+        <a href="{{ url_for('history', tag=tag) }}"
+           class="{% if selected_tag == tag %}active{% endif %}">
+          {{ tag }}
+        </a>
+      {% endfor %}
+    </div>
+  </div>
+
+  <!-- Question list -->
+  <div class="history-card">
+    <div class="history-card-header">
+      {% if selected_tag %}
+        Showing questions tagged <strong style="color:var(--accent2)">{{ selected_tag }}</strong>
+      {% else %}
+        All questions — newest first
+      {% endif %}
+    </div>
+
+    {% if questions %}
+      <ul class="history-list">
+        {% for q in questions %}
+          <li style="animation-delay: {{ loop.index0 * 0.05 }}s">
+            <span class="q-badge">{{ q.topic_tag or 'General' }}</span>
+            <div class="q-body">
+              <span class="q-text">{{ q.question_text }}</span>
+              <span class="q-time">🕐 {{ q.created_at.strftime('%d %b %Y, %I:%M %p') }}</span>
+            </div>
+          </li>
+        {% endfor %}
+      </ul>
+    {% else %}
+      <div class="empty-state">
+        <div class="empty-icon">🔍</div>
+        <p>No questions found
+          {% if selected_tag %}for <strong>{{ selected_tag }}</strong>{% endif %}.
+        </p>
+        <a href="{{ url_for('dashboard') }}">Ask your first question</a>
+      </div>
+    {% endif %}
+  </div>
+
+</div>
+{% endblock %}

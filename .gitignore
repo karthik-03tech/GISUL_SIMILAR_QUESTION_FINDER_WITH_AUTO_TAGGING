@@ -1,0 +1,51 @@
+# ─── Python ───────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*$py.class
+*.pyo
+*.pyd
+.Python
+
+# ─── Virtual Environment ──────────────────────────────────
+venv/
+env/
+.venv/
+ENV/
+
+# ─── Environment / Secrets ────────────────────────────────
+.env
+.env.local
+.env.*.local
+
+# ─── Database ─────────────────────────────────────────────
+instance/
+*.db
+*.sqlite
+*.sqlite3
+
+# ─── Test Artifacts ───────────────────────────────────────
+test_results_*.xlsx
+~$*.xlsx
+.pytest_cache/
+htmlcov/
+.coverage
+
+# ─── IDE / Editor ─────────────────────────────────────────
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+
+# ─── Logs ─────────────────────────────────────────────────
+*.log
+logs/
+
+# ─── Build / Dist ─────────────────────────────────────────
+dist/
+build/
+*.egg-info/
+
+# ─── HuggingFace model cache ──────────────────────────────
+.cache/
