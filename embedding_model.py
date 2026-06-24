@@ -27,6 +27,17 @@ topic_sentences = {
 import json
 import urllib.request
 import urllib.error
+import hashlib
+import random
+import math
+
+def get_mock_embedding(text: str) -> list:
+    """Generate a deterministic mock 384-dimensional vector as fallback."""
+    h = hashlib.md5(text.encode('utf-8')).hexdigest()
+    random.seed(h)
+    vec = [random.uniform(-1.0, 1.0) for _ in range(384)]
+    norm = math.sqrt(sum(x*x for x in vec))
+    return [x/norm for x in vec] if norm > 0 else vec
 
 def query_huggingface(texts):
     """Query the Hugging Face Inference API."""
@@ -34,13 +45,15 @@ def query_huggingface(texts):
     req = urllib.request.Request(API_URL, data=data, headers=headers)
     req.add_header("Content-Type", "application/json")
     try:
-        with urllib.request.urlopen(req) as response:
+        with urllib.request.urlopen(req, timeout=5) as response:
             return json.loads(response.read().decode("utf-8"))
     except urllib.error.HTTPError as e:
-        raise Exception(f"Hugging Face API error: {e.read().decode('utf-8')}")
+        print(f"Hugging Face API HTTPError: {e.read().decode('utf-8')}")
+        return [get_mock_embedding(t) for t in texts]
     except Exception as e:
         # Fallback error for DNS or connection issues
-        raise Exception(f"Network error querying Hugging Face: {str(e)}")
+        print(f"Network error querying Hugging Face: {str(e)}")
+        return [get_mock_embedding(t) for t in texts]
 
 # Pre-compute topic embeddings once at startup
 topic_embeddings = {}

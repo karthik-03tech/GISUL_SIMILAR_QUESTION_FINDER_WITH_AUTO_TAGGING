@@ -1,5 +1,5 @@
 # GISUL — Get Intelligence from Similar User Learning
-
+# OPTION_B-Similar Question Finder with Auto-Tagging
 > A Flask web app that uses AI embeddings to find semantically similar study questions from your personal history, powered by Qdrant Cloud vector search.
 
 ---
